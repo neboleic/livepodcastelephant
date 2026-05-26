@@ -148,7 +148,7 @@ export default function EditorPage() {
           <div className="animate-zoomIn flex flex-col items-center">
             {/* 根據被點擊的卡片 ID，自動帶入對應的正面圖片 */}
             <img 
-              src={CARD_CONFIG[activeCard.id]?.image} 
+              src={CARD_CONFIG.find(c => c.id === activeCard.id)?.image} 
               alt="卡片正面" 
               className="h-[70vh] aspect-[2/3] object-contain shadow-2xl rounded-md" 
             />
