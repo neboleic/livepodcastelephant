@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 
 // 🌟 卡牌專屬設定檔：請與 Editor 保持一致，填寫每張卡的正面圖片
 const CARD_CONFIG = [
-  { id: 0, image: "/M字閒聊1.jpg" },
+  { id: 0, image: "/M字閒聊.jpg" },
   { id: 1, image: "" },
   { id: 2, image: "" },
   { id: 3, image: "" },
