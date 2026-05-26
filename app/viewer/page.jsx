@@ -124,7 +124,7 @@ export default function ViewerPage() {
               className="h-[60vh] aspect-[2/3] object-contain shadow-2xl rounded-md" 
             />
             <div className="mt-6 text-white text-3xl font-black bg-blue-600 px-6 py-2 rounded-full shadow-md animate-pulse">
-              ⏱️ : {activeCard.time_left}s
+              ⏱️ {activeCard.time_left} 秒
             </div>
           </div>
         </div>
