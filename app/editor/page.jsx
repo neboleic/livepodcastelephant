@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 
 // 🌟 卡牌專屬設定檔：在這裡填寫每張卡的正面圖片與專屬秒數
 const CARD_CONFIG = [
-  { id: 0, image: "", initialTime: 5 },
+  { id: 0, image: "/M字閒聊1.jpg", initialTime: 30 },
   { id: 1, image: "", initialTime: 10 },
   { id: 2, image: "", initialTime: 15 },
   { id: 3, image: "", initialTime: 20 },
