@@ -17,6 +17,7 @@ const CARD_CONFIG = [
 export default function EditorPage() {
   const [cards, setCards] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false); // 新增：遊戲是否強制結束狀態
   const [floatingEmojis, setFloatingEmojis] = useState([]);
   const emojiChannelRef = useRef(null);
 
@@ -42,7 +43,10 @@ export default function EditorPage() {
         setCards((prev) => prev.map((card) => (card.id === payload.new.id ? payload.new : card)));
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'game_status' }, (payload) => {
-        if (payload.new.id === 1) setGameStarted(payload.new.is_started);
+        if (payload.new.id === 1) {
+          setGameStarted(payload.new.is_started);
+          setGameEnded(payload.new.is_ended); // 同步更新結束狀態
+        }
       })
       .subscribe();
 
@@ -80,7 +84,10 @@ export default function EditorPage() {
 
   const fetchGameStatus = async () => {
     const { data } = await supabase.from('game_status').select('*').eq('id', 1).single();
-    if (data) setGameStarted(data.is_started);
+    if (data) {
+      setGameStarted(data.is_started);
+      setGameEnded(data.is_ended);
+    }
   };
 
   useEffect(() => {
@@ -108,7 +115,7 @@ export default function EditorPage() {
   };
 
   const handleCardClick = async (id) => {
-    if (isAnyCardActive || !gameStarted) return;
+    if (isAnyCardActive || !gameStarted || gameEnded) return;
 
     const card = cards.find(c => c.id === id);
     if (card && !card.is_flipped && !card.is_disabled) {
@@ -118,13 +125,33 @@ export default function EditorPage() {
   };
 
   const handleStartGame = async () => {
-    await supabase.from('game_status').update({ is_started: true }).eq('id', 1);
+    await supabase.from('game_status').update({ is_started: true, is_ended: false }).eq('id', 1);
+  };
+
+  // 新增：按下結束按鈕後的處理邏輯
+  const handleEndGame = async () => {
+    if (!confirm("確定要強制結束遊戲嗎？所有卡牌將會立即失效消失。")) return;
+    
+    // 1. 將資料庫遊戲狀態設為已結束
+    await supabase.from('game_status').update({ is_ended: true }).eq('id', 1);
+    
+    // 2. 將所有卡牌同步設為失效，並播放消失音效
+    playSound('disappear');
+    const endPromises = cards.map((card) => {
+      return supabase
+        .from('cards')
+        .update({ is_flipped: false, is_disabled: true })
+        .eq('id', card.id);
+    });
+    await Promise.all(endPromises);
+    fetchCards();
   };
 
   const handleResetAll = async () => {
     if (!confirm("確定要重置所有卡牌並回到待機畫面嗎？")) return;
     
-    await supabase.from('game_status').update({ is_started: false }).eq('id', 1);
+    // 重置時將開始與結束狀態皆歸零
+    await supabase.from('game_status').update({ is_started: false, is_ended: false }).eq('id', 1);
 
     const resetPromises = cards.map((card) => {
       const config = CARD_CONFIG.find(c => String(c.id) === String(card.id));
@@ -172,6 +199,7 @@ export default function EditorPage() {
         }
       `}</style>
 
+      {/* 待機頁面 */}
       {!gameStarted && (
         <div className="fixed inset-0 bg-gray-900 flex flex-col items-center justify-center z-[80]">
           <h1 className="text-white text-4xl font-bold mb-8 tracking-widest">控制台待機中</h1>
@@ -184,7 +212,7 @@ export default function EditorPage() {
         </div>
       )}
 
-      {activeCard && gameStarted && (
+      {activeCard && gameStarted && !gameEnded && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 pointer-events-auto">
           <div className="animate-zoomIn flex flex-col items-center">
             <img 
@@ -201,17 +229,35 @@ export default function EditorPage() {
 
       <header className={`flex items-center gap-6 mb-4 z-10 w-full max-w-md justify-between transition-opacity duration-300 ${isAnyCardActive ? "opacity-20" : "opacity-100"}`}>
         <h1 className="text-white text-lg font-bold tracking-wider">控制台</h1>
-        <button 
-          onClick={handleResetAll}
-          className="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-md"
-          disabled={isAnyCardActive}
-        >
-          🔄 重置
-        </button>
+        <div className="flex gap-3">
+          {/* 新增：結束按鈕 */}
+          {gameStarted && !gameEnded && !isAllCardsDisabled && (
+            <button 
+              onClick={handleEndGame}
+              className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-md"
+            >
+              ⏹ 結束遊戲
+            </button>
+          )}
+          <button 
+            onClick={handleResetAll}
+            className="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-md"
+            disabled={isAnyCardActive}
+          >
+            🔄 重置
+          </button>
+        </div>
       </header>
       
       <div className={`flex-grow w-full max-w-md flex items-center justify-center min-h-0 z-10 transition-opacity duration-300 ${isAnyCardActive ? "opacity-20 pointer-events-none" : "opacity-100"}`}>
-        {isAllCardsDisabled && gameStarted ? (
+        {/* 判斷顯示：若是被按下結束，顯示指定失效文字 */}
+        {gameEnded ? (
+          <div className="text-center bg-red-950/40 p-8 rounded-xl border border-red-900/50 shadow-2xl max-w-sm">
+            <p className="text-orange-400 text-2xl font-bold tracking-wider leading-relaxed">
+              卡牌可發動時間已過<br />所有卡牌已失效
+            </p>
+          </div>
+        ) : isAllCardsDisabled && gameStarted ? (
           <div className="text-center bg-gray-800/80 p-8 rounded-xl border border-gray-700 shadow-2xl">
             <p className="text-white text-2xl font-bold tracking-wider leading-relaxed">
               卡牌已全數發動<br />暫無可使用卡牌
