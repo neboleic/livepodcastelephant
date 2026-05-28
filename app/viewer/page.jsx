@@ -140,7 +140,7 @@ export default function ViewerPage() {
           <div className="animate-zoomInViewer flex flex-col items-center">
             <img src={CARD_CONFIG.find(c => String(c.id) === String(activeCard.id))?.image} alt="卡片正面" className="h-[60vh] aspect-[2/3] object-contain shadow-2xl rounded-md" />
             <div className="mt-6 text-white text-3xl font-black bg-blue-600 px-6 py-2 rounded-full shadow-md animate-pulse">
-              ⏱️ 倒數: {activeCard.time_left}s
+              ⏱️ {activeCard.time_left} 秒
             </div>
           </div>
         </div>
