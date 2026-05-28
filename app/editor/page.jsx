@@ -5,13 +5,13 @@ import { supabase } from "../../lib/supabase";
 // 🌟 卡牌專屬設定檔：在這裡填寫每張卡的正面圖片與專屬秒數
 const CARD_CONFIG = [
   { id: 0, image: "/card1.jpg", initialTime: 30 },
-  { id: 1, image: "/card2.jpg", initialTime: 10 },
+  { id: 1, image: "/card2.jpg", initialTime: 45 },
   { id: 2, image: "/card3.jpg", initialTime: 15 },
-  { id: 3, image: "/card4.jpg", initialTime: 20 },
-  { id: 4, image: "/card5.jpg", initialTime: 25 },
+  { id: 3, image: "/card4.jpg", initialTime: 30 },
+  { id: 4, image: "/card5.jpg", initialTime: 60 },
   { id: 5, image: "/card6.jpg", initialTime: 30 },
-  { id: 6, image: "/card7.jpg", initialTime: 35 },
-  { id: 7, image: "/card8.jpg", initialTime: 40 },
+  { id: 6, image: "/card7.jpg", initialTime: 30 },
+  { id: 7, image: "/card8.jpg", initialTime: 30 },
   { id: 8, image: "/card9.jpg", initialTime: 45 },
 ];
 
