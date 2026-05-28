@@ -5,14 +5,14 @@ import { supabase } from "../../lib/supabase";
 // 🌟 卡牌專屬設定檔：請與 Editor 保持一致，填寫每張卡的正面圖片
 const CARD_CONFIG = [
   { id: 0, image: "/card1.jpg" },
-  { id: 1, image: "" },
-  { id: 2, image: "" },
-  { id: 3, image: "" },
-  { id: 4, image: "" },
-  { id: 5, image: "" },
-  { id: 6, image: "" },
-  { id: 7, image: "" },
-  { id: 8, image: "" },
+  { id: 1, image: "/card2.jpg" },
+  { id: 2, image: "/card3.jpg" },
+  { id: 3, image: "/card4.jpg" },
+  { id: 4, image: "/card5.jpg" },
+  { id: 5, image: "/card6.jpg" },
+  { id: 6, image: "/card7.jpg" },
+  { id: 7, image: "/card8.jpg" },
+  { id: 8, image: "/card9.jpg" },
 ];
 
 export default function ViewerPage() {
